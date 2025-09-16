@@ -2,6 +2,8 @@ package com.clinic.medAsist.mapper;
 
 
 import com.clinic.medAsist.domain.User;
+import com.clinic.medAsist.dto.SigninRequest;
+import com.clinic.medAsist.dto.SigninResponse;
 import com.clinic.medAsist.dto.SignupRequest;
 import com.clinic.medAsist.dto.SignupResponse;
 import org.mapstruct.Mapper;
@@ -15,9 +17,15 @@ such as services and controllers, without manually creating instances of the map
 
 @Mapper(componentModel = "spring")
 public interface UserMapper {
-    User toEntity(SignupRequest signupRequest);
 
+    //mapping for signup feature
+    User toEntity(SignupRequest signupRequest);
     @Mapping (target = "message", constant = "registration completed successfully")
     SignupResponse toSignupResponse(User user);
+
+    //mapping for signin feature;
+    User toEntity(SigninRequest signinRequest);
+    SigninResponse toSigninResponse(User user);
+
 
 }
