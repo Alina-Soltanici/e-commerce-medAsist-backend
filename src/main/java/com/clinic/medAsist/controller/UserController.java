@@ -1,5 +1,7 @@
 package com.clinic.medAsist.controller;
 
+import com.clinic.medAsist.dto.SigninRequest;
+import com.clinic.medAsist.dto.SigninResponse;
 import com.clinic.medAsist.dto.SignupRequest;
 import com.clinic.medAsist.dto.SignupResponse;
 import com.clinic.medAsist.service.UserService;
@@ -17,5 +19,15 @@ public class UserController {
     @PostMapping("/signup")
     public ResponseEntity<SignupResponse> signup(@RequestBody SignupRequest signupRequest) {
         return new ResponseEntity<> (userService.signUp (signupRequest), HttpStatus.CREATED);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<SigninResponse> login(@RequestBody SigninRequest signinRequest) {
+        return new ResponseEntity<>(userService.login(signinRequest), HttpStatus.OK);
+    }
+
+    @GetMapping("/secure")
+    public ResponseEntity<String> sayHello() {
+        return new ResponseEntity<>("Hello", HttpStatus.OK);
     }
 }
