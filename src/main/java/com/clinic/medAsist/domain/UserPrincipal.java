@@ -3,10 +3,9 @@ package com.clinic.medAsist.domain;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Component;
-
 import java.util.Collection;
 import java.util.stream.Collectors;
+
 
 public class UserPrincipal implements UserDetails {
     private User user;
@@ -16,7 +15,7 @@ public class UserPrincipal implements UserDetails {
     }
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return user.getRoles().stream().map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName()))
+        return user.getRoles().stream().map(role -> new SimpleGrantedAuthority(role.getName()))
                 .collect(Collectors.toSet());
     }
 
