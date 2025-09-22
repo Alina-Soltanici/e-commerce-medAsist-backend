@@ -8,4 +8,5 @@ public class SignupResponse {
     private String fullName;
     private String email;
     private String message;
+    private String token;
 }
