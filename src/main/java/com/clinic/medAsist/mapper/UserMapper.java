@@ -2,12 +2,11 @@ package com.clinic.medAsist.mapper;
 
 
 import com.clinic.medAsist.domain.User;
-import com.clinic.medAsist.dto.SigninRequest;
-import com.clinic.medAsist.dto.SigninResponse;
-import com.clinic.medAsist.dto.SignupRequest;
-import com.clinic.medAsist.dto.SignupResponse;
+import com.clinic.medAsist.dto.*;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+
+import java.util.List;
 
 /*
 When use @Mapper(componentModel = "spring"), MapStruct will generate the implementation of the
@@ -26,6 +25,12 @@ public interface UserMapper {
     //mapping for signin feature;
     User toEntity(SigninRequest signinRequest);
     SigninResponse toSigninResponse(User user);
+
+    //map to a userdto
+    UserDTO toUserDTO(User user);
+
+    //mapping to a userdto list
+    List<UserDTO> toUserDTO(List<User>users);
 
 
 }
