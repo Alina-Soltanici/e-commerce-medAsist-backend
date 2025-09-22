@@ -1,12 +1,13 @@
 package com.clinic.medAsist.service;
 
-import com.clinic.medAsist.dto.SigninRequest;
-import com.clinic.medAsist.dto.SigninResponse;
-import com.clinic.medAsist.dto.SignupRequest;
-import com.clinic.medAsist.dto.SignupResponse;
+import com.clinic.medAsist.domain.User;
+import com.clinic.medAsist.dto.*;
+
+import java.util.List;
 
 public interface UserService {
    SignupResponse signUp(SignupRequest signupRequest);
    SigninResponse login(SigninRequest signinRequest);
+   List<UserDTO> getAllUsers();
 
 }
