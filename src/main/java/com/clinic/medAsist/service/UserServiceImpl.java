@@ -3,16 +3,14 @@ package com.clinic.medAsist.service;
 import com.clinic.medAsist.domain.Role;
 import com.clinic.medAsist.domain.User;
 import com.clinic.medAsist.domain.UserPrincipal;
-import com.clinic.medAsist.dto.SigninRequest;
-import com.clinic.medAsist.dto.SigninResponse;
-import com.clinic.medAsist.dto.SignupRequest;
-import com.clinic.medAsist.dto.SignupResponse;
+import com.clinic.medAsist.dto.*;
 import com.clinic.medAsist.exception.*;
 import com.clinic.medAsist.mapper.UserMapper;
 import com.clinic.medAsist.repository.RoleRepository;
 import com.clinic.medAsist.repository.UserRepository;
 import com.clinic.medAsist.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -20,8 +18,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Set;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
@@ -32,15 +32,15 @@ public class UserServiceImpl implements UserService {
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
 
-
-
     @Override
     public SignupResponse signUp(SignupRequest signupRequest) {
         if(userRepository.existsByEmail (signupRequest.getEmail ())) {
+            log.info("Email already exists: {}", signupRequest.getEmail());
             throw new UserAlreadyExistsException ("Email already taken!");
         }
 
         if(!signupRequest.getConfirmPassword ().equals (signupRequest.getPassword ())){
+            log.info("Password don't match.");
             throw new PasswordMismatchException ("Passwords do not match!");
         }
 
@@ -60,7 +60,14 @@ public class UserServiceImpl implements UserService {
 
         user.setRoles (Set.of (defaultRole));
         User savedUser = userRepository.save (user);
-        return userMapper.toSignupResponse (savedUser);
+
+        log.info("User registered successfully");
+
+        UserPrincipal userPrincipal = new UserPrincipal(savedUser);
+        String token = jwtUtil.generateToken(userPrincipal);
+        SignupResponse signupResponse = userMapper.toSignupResponse(savedUser);
+        signupResponse.setToken(token);
+        return signupResponse;
     }
 
     @Override
@@ -69,6 +76,7 @@ public class UserServiceImpl implements UserService {
 
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
         String token = jwtUtil.generateToken(userPrincipal);
+        log.info("User logged successfully");
 
         SigninResponse signinResponse = new SigninResponse();
         signinResponse.setToken(token);
@@ -76,5 +84,11 @@ public class UserServiceImpl implements UserService {
         signinResponse.setUserId(userPrincipal.getId());
 
         return signinResponse;
+    }
+
+    @Override
+    public List<UserDTO> getAllUsers() {
+        List<User> usersEntity = userRepository.findAll();
+        return userMapper.toUserDTO(usersEntity);
     }
 }
