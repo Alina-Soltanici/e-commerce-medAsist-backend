@@ -59,5 +59,17 @@ public class GlobalHandlerException {
         errorMap.put ("message", termsAndPrivacyNotAcceptedException.getMessage ());
         return new ResponseEntity<> (errorMap, HttpStatus.BAD_REQUEST);
     }
+
+
+    @ExceptionHandler(RefreshTokenNotFoundException.class)
+    public ResponseEntity<?> handleRefreshTokenNotFoundException(RefreshTokenNotFoundException refreshTokenNotFoundException){
+        Map<String, Object> errorMap = new HashMap<> ();
+        errorMap.put ("timestamp", LocalDateTime.now ());
+        errorMap.put ("status", HttpStatus.NOT_FOUND.value ());
+        errorMap.put ("error", "Not found");
+        errorMap.put ("message", refreshTokenNotFoundException.getMessage ());
+        return new ResponseEntity<> (errorMap, HttpStatus.NOT_FOUND);
+    }
+
 }
 

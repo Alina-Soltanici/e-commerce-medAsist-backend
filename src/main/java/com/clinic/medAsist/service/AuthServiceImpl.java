@@ -1,5 +1,6 @@
 package com.clinic.medAsist.service;
 
+import com.clinic.medAsist.domain.RefreshToken;
 import com.clinic.medAsist.domain.Role;
 import com.clinic.medAsist.domain.User;
 import com.clinic.medAsist.domain.UserPrincipal;
@@ -8,29 +9,29 @@ import com.clinic.medAsist.exception.*;
 import com.clinic.medAsist.mapper.UserMapper;
 import com.clinic.medAsist.repository.RoleRepository;
 import com.clinic.medAsist.repository.UserRepository;
-import com.clinic.medAsist.security.JwtUtil;
+import com.clinic.medAsist.security.AccessTokenService;
+import com.clinic.medAsist.security.RefreshTokenService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.Set;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class UserServiceImpl implements UserService {
+public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
-    private final JwtUtil jwtUtil;
+    private final AccessTokenService accessTokenService;
+    private final RefreshTokenService refreshTokenService;
 
     @Override
     public SignupResponse signUp(SignupRequest signupRequest) {
@@ -64,9 +65,13 @@ public class UserServiceImpl implements UserService {
         log.info("User registered successfully");
 
         UserPrincipal userPrincipal = new UserPrincipal(savedUser);
-        String token = jwtUtil.generateToken(userPrincipal);
+        String accessToken = accessTokenService.generateToken(userPrincipal);
+
+        RefreshToken refreshToken = refreshTokenService.generateRefreshToken(userPrincipal);
+        refreshTokenService.saveRefreshToken(refreshToken);
         SignupResponse signupResponse = userMapper.toSignupResponse(savedUser);
-        signupResponse.setToken(token);
+        signupResponse.setToken(accessToken);
+        signupResponse.setRefreshToken(refreshToken.getToken());
         return signupResponse;
     }
 
@@ -75,11 +80,16 @@ public class UserServiceImpl implements UserService {
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(signinRequest.getEmail(), signinRequest.getPassword()));
 
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
-        String token = jwtUtil.generateToken(userPrincipal);
+        String token = accessTokenService.generateToken(userPrincipal);
+        log.info("Access token issued successfully:)");
+        RefreshToken refreshToken = refreshTokenService.generateRefreshToken(userPrincipal);
+        refreshTokenService.saveRefreshToken(refreshToken);
+        log.info("Refresh token issued successfully!");
         log.info("User logged successfully");
 
         SigninResponse signinResponse = new SigninResponse();
         signinResponse.setToken(token);
+        signinResponse.setRefreshToken(refreshToken.getToken());
         signinResponse.setTokenType("Bearer");
         signinResponse.setUserId(userPrincipal.getId());
 
